@@ -1,4 +1,5 @@
 using LibraryManagement.Models;
+using LibraryManagement.Repositories;
 
 namespace LibraryManagement.Tests
 {

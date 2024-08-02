@@ -1,4 +1,7 @@
-﻿namespace LibraryManagement.App
+﻿using LibraryManagement.Repositories;
+using LibraryManagement.Services;
+
+namespace LibraryManagement.App
 {
     /// <summary>
     /// Entry point for the Library Management Console Application.

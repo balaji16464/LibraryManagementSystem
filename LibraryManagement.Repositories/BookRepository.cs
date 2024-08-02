@@ -1,70 +1,105 @@
 ﻿using LibraryManagement.Models;
-using LibraryManagement.Repositories;
-using System.Collections.Generic;
-using System.Linq;
 
-public class BookRepository : IBookRepository
+namespace LibraryManagement.Repositories
 {
-    private readonly List<Book> _books = new();
-
-    public IEnumerable<Book> GetAll() => _books;
-
-    public Book GetByIsbn(string isbn)
+    /// <summary>
+    /// In-memory implementation of the book repository.
+    /// </summary>
+    /// <remarks>
+    /// Author: Balaji Thiruvenkadam
+    /// Created: 4 August 2024
+    /// </remarks>
+    public class BookRepository : IBookRepository
     {
-        if (string.IsNullOrWhiteSpace(isbn))
-        {
-            throw new ArgumentException("ISBN cannot be null or empty.", nameof(isbn));
-        }
-        return _books.FirstOrDefault(b => b.ISBN == isbn);
-    }
+        private readonly List<Book> _books = new();
 
-    public void Add(Book book)
-    {
-        if (book == null)
-        {
-            throw new ArgumentNullException(nameof(book));
-        }
+        /// <summary>
+        /// Gets all books from the repository.
+        /// </summary>
+        /// <returns>A list of all books.</returns>
+        public IEnumerable<Book> GetAll() => _books;
 
-        if (GetByIsbn(book.ISBN) != null)
+        /// <summary>
+        /// Retrieves a book by its ISBN.
+        /// </summary>
+        /// <param name="isbn">The ISBN of the book.</param>
+        /// <returns>The book with the specified ISBN, or null if not found.</returns>
+        /// <exception cref="ArgumentException">Thrown when ISBN is null or empty.</exception>
+        public Book GetByIsbn(string isbn)
         {
-            throw new ArgumentException("A book with the same ISBN already exists.");
-        }
-
-        book.Id = _books.Count + 1; // Auto-increment ID
-        _books.Add(book);
-    }
-
-    public void Update(Book book)
-    {
-        if (book == null)
-        {
-            throw new ArgumentNullException(nameof(book));
+            if (string.IsNullOrWhiteSpace(isbn))
+            {
+                throw new ArgumentException("ISBN cannot be null or empty.", nameof(isbn));
+            }
+            return _books.FirstOrDefault(b => b.ISBN == isbn);
         }
 
-        var existingBook = GetByIsbn(book.ISBN);
-        if (existingBook == null)
+        /// <summary>
+        /// Adds a new book to the repository.
+        /// </summary>
+        /// <param name="book">The book to add.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the book is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when a book with the same ISBN already exists.</exception>
+        public void Add(Book book)
         {
-            throw new KeyNotFoundException("Book not found.");
+            if (book == null)
+            {
+                throw new ArgumentNullException(nameof(book));
+            }
+
+            if (GetByIsbn(book.ISBN) != null)
+            {
+                throw new ArgumentException("A book with the same ISBN already exists.");
+            }
+
+            book.Id = _books.Count + 1; // Auto-increment ID
+            _books.Add(book);
         }
 
-        existingBook.Title = book.Title;
-        existingBook.Author = book.Author;
-        existingBook.Year = book.Year;
-    }
-
-    public void Delete(string isbn)
-    {
-        if (string.IsNullOrWhiteSpace(isbn))
+        /// <summary>
+        /// Updates an existing book in the repository.
+        /// </summary>
+        /// <param name="book">The book with updated information.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the book is null.</exception>
+        /// <exception cref="KeyNotFoundException">Thrown when the book is not found in the repository.</exception>
+        public void Update(Book book)
         {
-            throw new ArgumentException("ISBN cannot be null or empty.", nameof(isbn));
+            if (book == null)
+            {
+                throw new ArgumentNullException(nameof(book));
+            }
+
+            var existingBook = GetByIsbn(book.ISBN);
+            if (existingBook == null)
+            {
+                throw new KeyNotFoundException("Book not found.");
+            }
+
+            existingBook.Title = book.Title;
+            existingBook.Author = book.Author;
+            existingBook.Year = book.Year;
         }
 
-        var book = GetByIsbn(isbn);
-        if (book == null)
+        /// <summary>
+        /// Deletes a book from the repository by its ISBN.
+        /// </summary>
+        /// <param name="isbn">The ISBN of the book to delete.</param>
+        /// <exception cref="ArgumentException">Thrown when ISBN is null or empty.</exception>
+        /// <exception cref="KeyNotFoundException">Thrown when the book is not found in the repository.</exception>
+        public void Delete(string isbn)
         {
-            throw new KeyNotFoundException("Book not found.");
-        }
+            if (string.IsNullOrWhiteSpace(isbn))
+            {
+                throw new ArgumentException("ISBN cannot be null or empty.", nameof(isbn));
+            }
 
-        _books.Remove(book);
+            var book = GetByIsbn(isbn);
+            if (book == null)
+            {
+                throw new KeyNotFoundException("Book not found.");
+            }
+
+            _books.Remove(book);
+        }
     }
 }
