@@ -55,9 +55,9 @@ namespace LibraryManagement.Tests
         {
             var isbn = "978-3-16-148410-0";
 
-            _bookService.DeleteBook(isbn);
+            _bookService.DeleteBookByIsbn(isbn);
 
-            _mockRepository.Verify(r => r.Delete(isbn), Times.Once, "Delete method should be called once.");
+            _mockRepository.Verify(r => r.DeleteByIsbn(isbn), Times.Once, "Delete method should be called once.");
         }
 
         [Test]

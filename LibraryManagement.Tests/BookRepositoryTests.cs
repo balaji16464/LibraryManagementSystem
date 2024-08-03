@@ -57,9 +57,21 @@ namespace LibraryManagement.Tests
             var book = new Book { Title = "Book to Delete", Author = "Author", ISBN = "978-3-16-148410-0", Year = 2020 };
             _repository.Add(book);
 
-            _repository.Delete(book.ISBN);
+            _repository.DeleteByIsbn(book.ISBN);
 
             var result = _repository.GetByIsbn(book.ISBN);
+            Assert.That(result, Is.Null, "Book should be removed.");
+        }
+
+        [Test]
+        public void DeleteById_ShouldRemoveBookSuccessfully()
+        {
+            var book = new Book { Title = "Book to Delete", Author = "Author", ISBN = "978-3-16-148410-0", Year = 2020 };
+            _repository.Add(book);
+
+            _repository.DeleteById(book.Id);
+
+            var result = _repository.GetById(book.Id);
             Assert.That(result, Is.Null, "Book should be removed.");
         }
 

@@ -35,12 +35,23 @@ namespace LibraryManagement.Repositories
         }
 
         /// <summary>
+        /// Retrieves a book by its Id.
+        /// </summary>
+        /// <param name="isbn">The Id of the book.</param>
+        /// <returns>The book with the specified Id, or null if not found.</returns>
+        /// <exception cref="ArgumentException">Thrown when Id is null or empty.</exception>
+        public Book GetById(int id)
+        {
+            return _books.FirstOrDefault(b => b.Id == id);
+        }
+
+        /// <summary>
         /// Adds a new book to the repository.
         /// </summary>
         /// <param name="book">The book to add.</param>
         /// <exception cref="ArgumentNullException">Thrown when the book is null.</exception>
         /// <exception cref="ArgumentException">Thrown when a book with the same ISBN already exists.</exception>
-        public void Add(Book book)
+        public Book Add(Book book)
         {
             if (book == null)
             {
@@ -54,6 +65,8 @@ namespace LibraryManagement.Repositories
 
             book.Id = _books.Count + 1; // Auto-increment ID
             _books.Add(book);
+
+            return book;
         }
 
         /// <summary>
@@ -86,7 +99,7 @@ namespace LibraryManagement.Repositories
         /// <param name="isbn">The ISBN of the book to delete.</param>
         /// <exception cref="ArgumentException">Thrown when ISBN is null or empty.</exception>
         /// <exception cref="KeyNotFoundException">Thrown when the book is not found in the repository.</exception>
-        public void Delete(string isbn)
+        public bool DeleteByIsbn(string isbn)
         {
             if (string.IsNullOrWhiteSpace(isbn))
             {
@@ -99,7 +112,23 @@ namespace LibraryManagement.Repositories
                 throw new KeyNotFoundException("Book not found.");
             }
 
-            _books.Remove(book);
+            return _books.Remove(book);
+        }
+
+        /// <summary>
+        /// Deletes a book from the repository by its Id.
+        /// </summary>
+        /// <param name="id">The id of the book to delete.</param>
+        /// <exception cref="KeyNotFoundException">Thrown when the book is not found in the repository.</exception>
+        public bool DeleteById(int id)
+        {
+            var book = GetById(id);
+            if (book == null)
+            {
+                throw new KeyNotFoundException("Book not found.");
+            }
+
+            return _books.Remove(book);
         }
     }
 }

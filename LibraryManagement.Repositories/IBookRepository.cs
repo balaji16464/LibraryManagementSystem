@@ -25,10 +25,17 @@ namespace LibraryManagement.Repositories
         Book GetByIsbn(string isbn);
 
         /// <summary>
+        /// Retrieves a book by its Id.
+        /// </summary>
+        /// <param name="id">The Id of the book.</param>
+        /// <returns>The book with the specified Id, or null if not found.</returns>
+        Book GetById(int id);
+
+        /// <summary>
         /// Adds a new book to the repository.
         /// </summary>
         /// <param name="book">The book to add.</param>
-        void Add(Book book);
+        Book Add(Book book);
 
         /// <summary>
         /// Updates an existing book in the repository.
@@ -40,6 +47,12 @@ namespace LibraryManagement.Repositories
         /// Deletes a book from the repository by its ISBN.
         /// </summary>
         /// <param name="isbn">The ISBN of the book to delete.</param>
-        void Delete(string isbn);
+        bool DeleteByIsbn(string isbn);
+
+        /// <summary>
+        /// Deletes a book from the repository by its Id.
+        /// </summary>
+        /// <param name="id">The id of the book to delete.</param>
+        bool DeleteById(int id);
     }
 }

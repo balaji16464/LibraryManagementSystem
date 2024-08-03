@@ -9,8 +9,6 @@ namespace LibraryManagement.Services
     /// <remarks>
     /// Author: Balaji Thiruvenkadam
     /// Created: 4 August 2024
-    /// Modified: [Date] - Refactored to include basic CRUD operations.
-    /// 
     /// Purpose:
     /// This file defines the BookService class, which serves as a service layer for interacting
     /// with the book repository. It includes methods for retrieving, adding, updating, and
@@ -45,12 +43,19 @@ namespace LibraryManagement.Services
         public Book GetBookByIsbn(string isbn) => _repository.GetByIsbn(isbn);
 
         /// <summary>
+        /// Gets a book by Id from the repository.
+        /// </summary>
+        /// <param name="isbn">The Id of the book.</param>
+        /// <returns>The book with the specified Id, or null if not found.</returns>
+        public Book GetBookById(int id) => _repository.GetById(id);
+
+        /// <summary>
         /// Adds a new book to the repository.
         /// </summary>
         /// <param name="book">The book to add.</param>
-        public void AddBook(Book book)
+        public Book AddBook(Book book)
         {
-            _repository.Add(book);
+            return _repository.Add(book);
         }
 
         /// <summary>
@@ -66,9 +71,18 @@ namespace LibraryManagement.Services
         /// Deletes a book from the repository by its ISBN.
         /// </summary>
         /// <param name="isbn">The ISBN of the book to delete.</param>
-        public void DeleteBook(string isbn)
+        public bool DeleteBookByIsbn(string isbn)
         {
-            _repository.Delete(isbn);
+            return _repository.DeleteByIsbn(isbn);
+        }
+
+        /// <summary>
+        /// Deletes a book from the repository by its Id.
+        /// </summary>
+        /// <param name="Id">The Id of the book to delete.</param>
+        public bool DeleteBookById(int id)
+        {
+            return _repository.DeleteById(id);
         }
     }
 }

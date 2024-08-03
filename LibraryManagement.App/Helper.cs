@@ -15,6 +15,8 @@ namespace LibraryManagement.App
     /// </remarks>
     public static class Helper
     {
+        private static readonly Regex IsbnRegex = new Regex(@"^(97(8|9))?\d{1,5}-\d{1,7}-\d{1,7}-\d{1,7}-\d{1,3}$");
+
         /// <summary>
         /// Prompts the user to enter a year and validates the input.
         /// </summary>
@@ -84,20 +86,36 @@ namespace LibraryManagement.App
         /// </remarks>
         public static string GetValidIsbn()
         {
-            string isbn;
-            var isbnPattern = @"^(97(8|9)-?)?\d{1,5}-\d{1,7}-\d{1,7}-[\dX]$";
-            while (true)
+            int attempts = 0;
+            while (attempts < 2)
             {
-                Console.Write("Enter ISBN (e.g., 978-3-16-148410-0): ");
-                isbn = Console.ReadLine();
+                Console.Write("Enter valid ISBN in format (e.g., 978-3-16-148410-0): ");
+                var isbn = Console.ReadLine();
 
-                if (!string.IsNullOrWhiteSpace(isbn) && Regex.IsMatch(isbn, isbnPattern))
+                if (IsbnRegex.IsMatch(isbn))
                 {
                     return isbn;
                 }
+                else
+                {
+                    attempts++;
+                    Console.WriteLine("Invalid ISBN format. Please try again.");
+                }
+            }
 
-                Console.WriteLine("Invalid ISBN format. Please enter a valid ISBN.");
+            Console.WriteLine("You have entered an invalid ISBN twice.");
+            Console.WriteLine("Do you want to retry the operation? (Y/N): ");
+            var choice = Console.ReadLine()?.ToUpper();
+
+            if (choice == "Y")
+            {
+                return GetValidIsbn(); // Restart the ISBN entry process
+            }
+            else
+            {
+                throw new Exception("Operation aborted by user due to invalid ISBN entries.");
             }
         }
+
     }
 }

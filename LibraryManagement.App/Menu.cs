@@ -40,10 +40,10 @@ namespace LibraryManagement.App
                 Console.WriteLine("=====================================\n");
                 Console.WriteLine("Please select an option:");
                 Console.WriteLine("1. Add a new book");
-                Console.WriteLine("2. Update an existing book by ISBN");
-                Console.WriteLine("3. Delete a book by ISBN");
+                Console.WriteLine("2. Update an existing book by ISBN or Id");
+                Console.WriteLine("3. Delete a book by ISBN or Id");
                 Console.WriteLine("4. List all books");
-                Console.WriteLine("5. View details of a specific book by ISBN");
+                Console.WriteLine("5. View details of a specific book by ISBN or Id");
                 Console.WriteLine("6. Exit\n");
                 Console.Write("Enter your choice: ");
                 var option = Console.ReadLine();
@@ -92,18 +92,18 @@ namespace LibraryManagement.App
                 Console.WriteLine("Add a New Book");
                 Console.WriteLine("==============\n");
 
-                var book = new Book
-                {
-                    Title = Helper.GetValidInput("Enter Title: "),
-                    Author = Helper.GetValidInput("Enter Author: "),
-                    ISBN = Helper.GetValidIsbn(),
-                    Year = Helper.GetValidYear()
-                };
-
                 try
                 {
-                    _bookService.AddBook(book);
-                    Console.WriteLine("\nBook added successfully.");
+                    var book = new Book
+                    {
+                        Title = Helper.GetValidInput("Enter Title: "),
+                        Author = Helper.GetValidInput("Enter Author: "),
+                        ISBN = Helper.GetValidIsbn(),
+                        Year = Helper.GetValidYear()
+                    };
+
+                   var addedBook = _bookService.AddBook(book);
+                    Console.WriteLine("\nBook added successfully with the id : " + addedBook.Id);
                 }
                 catch (Exception ex)
                 {
@@ -131,23 +131,53 @@ namespace LibraryManagement.App
                 Console.WriteLine("Update an Existing Book");
                 Console.WriteLine("=======================\n");
 
-                var isbn = Helper.GetValidIsbn();
-                var book = _bookService.GetBookByIsbn(isbn);
+                Console.WriteLine("Would you like to update the book by ID or ISBN?");
+                Console.WriteLine("1. By ID");
+                Console.WriteLine("2. By ISBN");
+                Console.Write("Enter your choice: ");
+                var choice = Console.ReadLine();
 
-                if (book == null)
-                {
-                    Console.WriteLine("\nBook not found.");
-                    if (!PromptForAnotherOperation()) break;
-                    continue;
-                }
-
-                book.Title = Helper.GetValidInput("Enter new Title: ");
-                book.Author = Helper.GetValidInput("Enter new Author: ");
-                book.Year = Helper.GetValidYear();
+                Book book = null;
 
                 try
                 {
+                    if (choice == "1")
+                    {
+                        var id = Helper.GetValidInput("Enter Book ID: ");
+                        if (int.TryParse(id, out var bookId))
+                        {
+                            book = _bookService.GetBookById(bookId);
+                        }
+
+                        if (book != null)
+                        {
+                            Console.WriteLine($"\nCurrent ISBN: {book.ISBN}");
+                            var newIsbn = Helper.GetValidIsbn();
+                            if (!string.IsNullOrWhiteSpace(newIsbn))
+                            {
+                                book.ISBN = newIsbn;
+                            }
+                        }
+                    }
+                    else if (choice == "2")
+                    {
+                        var isbn = Helper.GetValidIsbn();
+                        book = _bookService.GetBookByIsbn(isbn);
+                    }
+
+                    if (book == null)
+                    {
+                        Console.WriteLine("\nBook not found.");
+                        if (!PromptForAnotherOperation()) break;
+                        continue;
+                    }
+
+                    book.Title = Helper.GetValidInput("Enter new Title: ");
+                    book.Author = Helper.GetValidInput("Enter new Author: ");
+                    book.Year = Helper.GetValidYear();
+
                     _bookService.UpdateBook(book);
+
                     Console.WriteLine("\nBook updated successfully.");
                 }
                 catch (Exception ex)
@@ -175,12 +205,41 @@ namespace LibraryManagement.App
                 Console.WriteLine("Delete a Book");
                 Console.WriteLine("=============\n");
 
-                var isbn = Helper.GetValidIsbn();
+                Console.WriteLine("Would you like to delete the book by ID or ISBN?");
+                Console.WriteLine("1. By ID");
+                Console.WriteLine("2. By ISBN");
+                Console.Write("Enter your choice: ");
+                var choice = Console.ReadLine();
+
 
                 try
                 {
-                    _bookService.DeleteBook(isbn);
-                    Console.WriteLine("\nBook deleted successfully.");
+
+                    bool success = false;
+
+                    if (choice == "1")
+                    {
+                        var id = Helper.GetValidInput("Enter Book ID: ");
+                        if (int.TryParse(id, out var bookId))
+                        {
+                            success = _bookService.DeleteBookById(bookId);
+                        }
+                    }
+                    else if (choice == "2")
+                    {
+                        var isbn = Helper.GetValidIsbn();
+                        success = _bookService.DeleteBookByIsbn(isbn);
+                    }
+
+
+                    if (success)
+                    {
+                        Console.WriteLine("\nBook deleted successfully.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("\nBook not found or could not be deleted.");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -207,24 +266,53 @@ namespace LibraryManagement.App
                 Console.WriteLine("View Book Details");
                 Console.WriteLine("=================\n");
 
-                var isbn = Helper.GetValidIsbn();
-                var book = _bookService.GetBookByIsbn(isbn);
+                Console.WriteLine("Would you like to view the book details by ID or ISBN?");
+                Console.WriteLine("1. By ID");
+                Console.WriteLine("2. By ISBN");
+                Console.Write("Enter your choice: ");
+                var choice = Console.ReadLine();
 
-                if (book != null)
+                Book book = null;
+
+                try
                 {
-                    Console.WriteLine($"\nTitle: {book.Title}");
-                    Console.WriteLine($"Author: {book.Author}");
-                    Console.WriteLine($"ISBN: {book.ISBN}");
-                    Console.WriteLine($"Year: {book.Year}");
+
+                    if (choice == "1")
+                    {
+                        var id = Helper.GetValidInput("Enter Book ID: ");
+                        if (int.TryParse(id, out var bookId))
+                        {
+                            book = _bookService.GetBookById(bookId);
+                        }
+                    }
+                    else if (choice == "2")
+                    {
+                        var isbn = Helper.GetValidIsbn();
+                        book = _bookService.GetBookByIsbn(isbn);
+                    }
+
+                    if (book != null)
+                    {
+                        Console.WriteLine($"\nTitle: {book.Title}");
+                        Console.WriteLine($"Author: {book.Author}");
+                        Console.WriteLine($"ISBN: {book.ISBN}");
+                        Console.WriteLine($"Year: {book.Year}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("\nBook not found.");
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    Console.WriteLine("\nBook not found.");
+                    Console.WriteLine($"\nError: {ex.Message}");
                 }
+
 
                 if (!PromptForAnotherOperation()) break;
             }
         }
+
 
         /// <summary>
         /// Lists all the books available in the library.
@@ -250,7 +338,7 @@ namespace LibraryManagement.App
             {
                 foreach (var book in books)
                 {
-                    Console.WriteLine($"ID: {book.Id}, Title: {book.Title}, Author: {book.Author}, ISBN: {book.ISBN}");
+                    Console.WriteLine($"ID: {book.Id}, Title: {book.Title}, Author: {book.Author}, ISBN: {book.ISBN}, Year: {book.Year}");
                 }
             }
 
