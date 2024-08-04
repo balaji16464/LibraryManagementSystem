@@ -15,7 +15,6 @@ The Library Management System is a .NET console application designed to manage a
 ## Technologies
 
 - **.NET Core**: The framework used for building the application.
-- **Entity Framework Core**: Used for data access and management.
 - **NUnit**: Used for unit testing.
 - **Moq**: Used for mocking dependencies in unit tests.
 
