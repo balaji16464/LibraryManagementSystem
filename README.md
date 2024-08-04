@@ -33,7 +33,7 @@ The Library Management System is a .NET console application designed to manage a
    Open a terminal or command prompt and run the following commands:
 
    ```bash
-   git clone https://github.com/yourusername/LibraryManagementSystem.git
+   git clone [https://github.com/yourusername/LibraryManagementSystem.git](https://github.com/balaji16464/LibraryManagementSystem.git)
    cd LibraryManagementSystem
 
 2.**Open in Visual Studio**
