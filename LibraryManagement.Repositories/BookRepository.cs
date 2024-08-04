@@ -72,9 +72,9 @@ namespace LibraryManagement.Repositories
         /// <summary>
         /// Updates an existing book in the repository.
         /// </summary>
-        /// <param name="book">The book with updated information.</param>
-        /// <exception cref="ArgumentNullException">Thrown when the book is null.</exception>
-        /// <exception cref="KeyNotFoundException">Thrown when the book is not found in the repository.</exception>
+        /// <param name="book">The book with updated details.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the provided book is null.</exception>
+        /// <exception cref="KeyNotFoundException">Thrown when the book is not found in the repository by either ID or ISBN.</exception>
         public void Update(Book book)
         {
             if (book == null)
@@ -82,12 +82,22 @@ namespace LibraryManagement.Repositories
                 throw new ArgumentNullException(nameof(book));
             }
 
-            var existingBook = GetByIsbn(book.ISBN);
+            // Try to find the existing book by Id first
+            var existingBook = GetById(book.Id);
+
+            // If not found by Id, try to find it by ISBN
+            if (existingBook == null)
+            {
+                existingBook = GetByIsbn(book.ISBN);
+            }
+
+            // If still not found, throw an exception
             if (existingBook == null)
             {
                 throw new KeyNotFoundException("Book not found.");
             }
 
+            // Update the details of the existing book
             existingBook.Title = book.Title;
             existingBook.Author = book.Author;
             existingBook.Year = book.Year;
