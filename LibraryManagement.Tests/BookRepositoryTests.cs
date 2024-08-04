@@ -1,90 +1,143 @@
 using LibraryManagement.Models;
 using LibraryManagement.Repositories;
+using NUnit.Framework;
+using System;
+using System.Collections.Generic;
 
 namespace LibraryManagement.Tests
 {
-    /// <summary>
-    /// Unit tests for the <see cref="BookRepository"/> class.
-    /// </summary>
-    /// <remarks>
-    /// Author: Balaji Thiruvenkadam
-    /// Created: 4 August 2024
-    /// Purpose:
-    /// This file contains unit tests for the <see cref="BookRepository"/> class, which provides methods
-    /// for managing books in the repository. The tests cover adding, updating, deleting, and retrieving
-    /// books to ensure the correct functionality of repository methods.
-    /// </remarks>
     [TestFixture]
     public class BookRepositoryTests
     {
-        private BookRepository _repository;
+        private BookRepository _bookRepository;
 
         [SetUp]
         public void SetUp()
         {
-            _repository = new BookRepository();
+            _bookRepository = new BookRepository();
         }
 
         [Test]
-        public void Add_ShouldAddBookSuccessfully()
+        public void Add_ShouldThrowException_WhenBookIsNull()
+        {
+            Book nullBook = null;
+
+            var ex = Assert.Throws<ArgumentNullException>(() => _bookRepository.Add(nullBook));
+            Assert.That(ex.ParamName, Is.EqualTo("book"));
+        }
+
+        [Test]
+        public void Add_ShouldThrowException_WhenIsbnAlreadyExists()
+        {
+            var book1 = new Book { Title = "Book 1", Author = "Author 1", ISBN = "978-3-16-148410-0", Year = 2020 };
+            _bookRepository.Add(book1);
+
+            var book2 = new Book { Title = "Book 2", Author = "Author 2", ISBN = "978-3-16-148410-0", Year = 2021 };
+
+            var ex = Assert.Throws<ArgumentException>(() => _bookRepository.Add(book2));
+            Assert.That(ex.Message, Is.EqualTo("A book with the same ISBN already exists."));
+        }
+
+        [Test]
+        public void Add_ShouldAssignAutoIncrementedId_WhenBookIsAdded()
         {
             var book = new Book { Title = "Test Book", Author = "Test Author", ISBN = "978-3-16-148410-0", Year = 2020 };
 
-            _repository.Add(book);
+            var addedBook = _bookRepository.Add(book);
 
-            var result = _repository.GetByIsbn(book.ISBN);
-            Assert.That(result, Is.Not.Null, "Book should be added.");
-            Assert.That(result.Title, Is.EqualTo(book.Title), "Book title should match.");
+            Assert.That(addedBook.Id, Is.EqualTo(1), "First book added should have Id = 1.");
         }
 
         [Test]
-        public void Update_ShouldUpdateBookSuccessfully()
+        public void GetByIsbn_ShouldReturnBook_WhenExists()
         {
-            var book = new Book { Title = "Original Title", Author = "Original Author", ISBN = "978-3-16-148410-0", Year = 2020 };
-            _repository.Add(book);
+            var book = new Book { Title = "Test Book", Author = "Test Author", ISBN = "978-3-16-148410-0", Year = 2020 };
+            _bookRepository.Add(book);
 
-            var updatedBook = new Book { Title = "Updated Title", Author = "Updated Author", ISBN = book.ISBN, Year = 2021 };
-            _repository.Update(updatedBook);
+            var result = _bookRepository.GetByIsbn("978-3-16-148410-0");
 
-            var result = _repository.GetByIsbn(book.ISBN);
-            Assert.That(result, Is.Not.Null, "Book should exist.");
-            Assert.That(result.Title, Is.EqualTo("Updated Title"), "Book title should be updated.");
+            Assert.That(result, Is.EqualTo(book));
         }
 
         [Test]
-        public void Delete_ShouldRemoveBookSuccessfully()
+        public void GetById_ShouldReturnBook_WhenExists()
         {
-            var book = new Book { Title = "Book to Delete", Author = "Author", ISBN = "978-3-16-148410-0", Year = 2020 };
-            _repository.Add(book);
+            var book = new Book { Title = "Test Book", Author = "Test Author", ISBN = "978-3-16-148410-0", Year = 2020 };
+            _bookRepository.Add(book);
 
-            _repository.DeleteByIsbn(book.ISBN);
+            var result = _bookRepository.GetById(1);
 
-            var result = _repository.GetByIsbn(book.ISBN);
-            Assert.That(result, Is.Null, "Book should be removed.");
+            Assert.That(result, Is.EqualTo(book));
         }
 
         [Test]
-        public void DeleteById_ShouldRemoveBookSuccessfully()
+        public void Update_ShouldThrowException_WhenBookIsNull()
         {
-            var book = new Book { Title = "Book to Delete", Author = "Author", ISBN = "978-3-16-148410-0", Year = 2020 };
-            _repository.Add(book);
+            Book nullBook = null;
 
-            _repository.DeleteById(book.Id);
+            var ex = Assert.Throws<ArgumentNullException>(() => _bookRepository.Update(nullBook));
+            Assert.That(ex.ParamName, Is.EqualTo("book"));
+        }
 
-            var result = _repository.GetById(book.Id);
-            Assert.That(result, Is.Null, "Book should be removed.");
+        [Test]
+        public void Update_ShouldThrowException_WhenBookDoesNotExist()
+        {
+            var book = new Book { Id = 999, Title = "Non-existent Book", Author = "Unknown", ISBN = "999-9-99-999999-9", Year = 2020 };
+
+            var ex = Assert.Throws<KeyNotFoundException>(() => _bookRepository.Update(book));
+            Assert.That(ex.Message, Is.EqualTo("Book not found."));
+        }
+
+        [Test]
+        public void DeleteByIsbn_ShouldThrowException_WhenBookDoesNotExist()
+        {
+            var ex = Assert.Throws<KeyNotFoundException>(() => _bookRepository.DeleteByIsbn("978-3-16-148410-0"));
+            Assert.That(ex.Message, Is.EqualTo("Book not found."));
+        }
+
+        [Test]
+        public void DeleteByIsbn_ShouldReturnTrue_WhenBookIsDeleted()
+        {
+            var book = new Book { Title = "Test Book", Author = "Test Author", ISBN = "978-3-16-148410-0", Year = 2020 };
+            _bookRepository.Add(book);
+
+            var result = _bookRepository.DeleteByIsbn("978-3-16-148410-0");
+
+            Assert.That(result, Is.True, "DeleteByIsbn should return true when deletion is successful.");
         }
 
         [Test]
         public void GetAll_ShouldReturnAllBooks()
         {
-            _repository.Add(new Book { Title = "Book 1", Author = "Author 1", ISBN = "978-3-16-148410-1", Year = 2020 });
-            _repository.Add(new Book { Title = "Book 2", Author = "Author 2", ISBN = "978-3-16-148410-2", Year = 2021 });
+            var book1 = new Book { Title = "Book 1", Author = "Author 1", ISBN = "978-3-16-148410-0", Year = 2020 };
+            var book2 = new Book { Title = "Book 2", Author = "Author 2", ISBN = "978-3-16-148410-1", Year = 2021 };
 
-            var books = _repository.GetAll().ToList();
+            _bookRepository.Add(book1);
+            _bookRepository.Add(book2);
 
-            Assert.That(books.Count, Is.EqualTo(2), "Should return two books.");
-            Assert.That(books, Has.All.Property("Title").Not.Empty, "All books should have non-empty titles.");
+            var books = _bookRepository.GetAll();
+
+            Assert.That(books, Has.Count.EqualTo(2));
+            Assert.That(books, Contains.Item(book1));
+            Assert.That(books, Contains.Item(book2));
+        }
+
+        [Test]
+        public void DeleteById_ShouldThrowException_WhenBookDoesNotExist()
+        {
+            var ex = Assert.Throws<KeyNotFoundException>(() => _bookRepository.DeleteById(999));
+            Assert.That(ex.Message, Is.EqualTo("Book not found."));
+        }
+
+        [Test]
+        public void DeleteById_ShouldReturnTrue_WhenBookIsDeleted()
+        {
+            var book = new Book { Title = "Test Book", Author = "Test Author", ISBN = "978-3-16-148410-0", Year = 2020 };
+            _bookRepository.Add(book);
+
+            var result = _bookRepository.DeleteById(1);
+
+            Assert.That(result, Is.True, "DeleteById should return true when deletion is successful.");
         }
     }
 }

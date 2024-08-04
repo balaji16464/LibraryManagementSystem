@@ -1,6 +1,5 @@
 ﻿using LibraryManagement.Models;
 using LibraryManagement.Services;
-using System;
 
 namespace LibraryManagement.App
 {
@@ -297,7 +296,7 @@ namespace LibraryManagement.App
         /// <summary>
         /// Displays simple instructions for using the Library Management System.
         /// </summary>
-        private void DisplayInstructions()
+        private static void DisplayInstructions()
         {
             Console.Clear();
             Console.WriteLine("=====================================");

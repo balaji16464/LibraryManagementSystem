@@ -19,19 +19,11 @@ namespace LibraryManagement.Models
         /// <summary>
         /// Gets or sets the title of the book.
         /// </summary>
-        /// <remarks>
-        /// The title is required and must not exceed 100 characters.
-        /// </remarks>
-        [StringLength(100, MinimumLength = 1, ErrorMessage = "Title is required and cannot exceed 100 characters.")]
         public required string Title { get; set; }
 
         /// <summary>
         /// Gets or sets the author of the book.
         /// </summary>
-        /// <remarks>
-        /// The author is required and must not exceed 100 characters.
-        /// </remarks>
-        [StringLength(100, MinimumLength = 1, ErrorMessage = "Author is required and cannot exceed 100 characters.")]
         public required string Author { get; set; }
 
         /// <summary>
@@ -48,7 +40,6 @@ namespace LibraryManagement.Models
         /// <remarks>
         /// The year must be a positive number.
         /// </remarks>
-        [Range(1, int.MaxValue, ErrorMessage = "Year must be a positive number.")]
         public int Year { get; set; }
     }
 }

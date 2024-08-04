@@ -1,5 +1,6 @@
 ﻿using LibraryManagement.Models;
 using LibraryManagement.Repositories;
+using System.Text.RegularExpressions;
 
 namespace LibraryManagement.Services
 {
@@ -16,9 +17,10 @@ namespace LibraryManagement.Services
     /// logic operations for managing books.
     /// </remarks>
 
-    public class BookService
+    public partial class BookService
     {
         private readonly IBookRepository _repository;
+        private static readonly Regex IsbnRegex = Isbn();
 
         /// <summary>
         /// Initializes a new instance of BookService with the provided repository.
@@ -55,6 +57,11 @@ namespace LibraryManagement.Services
         /// <param name="book">The book to add.</param>
         public Book AddBook(Book book)
         {
+            if (!ValidateIsbn(book.ISBN))
+            {
+                throw new ArgumentException("Invalid ISBN format.");
+            }
+
             return _repository.Add(book);
         }
 
@@ -64,6 +71,11 @@ namespace LibraryManagement.Services
         /// <param name="book">The book with updated information.</param>
         public void UpdateBook(Book book)
         {
+            if (!ValidateIsbn(book.ISBN))
+            {
+                throw new ArgumentException("Invalid ISBN format.");
+            }
+
             _repository.Update(book);
         }
 
@@ -73,6 +85,11 @@ namespace LibraryManagement.Services
         /// <param name="isbn">The ISBN of the book to delete.</param>
         public bool DeleteBookByIsbn(string isbn)
         {
+            if (!ValidateIsbn(isbn))
+            {
+                throw new ArgumentException("Invalid ISBN format.");
+            }
+
             return _repository.DeleteByIsbn(isbn);
         }
 
@@ -84,5 +101,13 @@ namespace LibraryManagement.Services
         {
             return _repository.DeleteById(id);
         }
+
+        private bool ValidateIsbn(string isbn)
+        {
+            return IsbnRegex.IsMatch(isbn);
+        }
+
+        [GeneratedRegex(@"^(97(8|9))?\d{1,5}-\d{1,7}-\d{1,7}-\d{1,7}-\d{1,3}$")]
+        private static partial Regex Isbn();
     }
 }
