@@ -1,5 +1,6 @@
 ﻿using LibraryManagement.Models;
 using LibraryManagement.Services;
+using System;
 
 namespace LibraryManagement.App
 {
@@ -22,16 +23,12 @@ namespace LibraryManagement.App
             _bookService = bookService;
         }
 
-        /// <summary>
-        /// Displays the main menu and handles user input for navigating to various operations.
-        /// </summary>
-        /// <remarks>
-        /// This method displays the main menu options to the user and processes their selection. It
-        /// invokes the appropriate methods for adding, updating, deleting, listing, and viewing book
-        /// details. The menu continues to display until the user chooses to exit the application.
-        /// </remarks>
+        #region Public Methods
+
         public void DisplayMainMenu()
         {
+            DisplayInstructions();
+
             while (true)
             {
                 Console.Clear();
@@ -76,14 +73,13 @@ namespace LibraryManagement.App
             }
         }
 
+        #endregion
+
+        #region Private Methods
+
         /// <summary>
-        /// Manages the process of adding a new book to the library.
+        /// Manages the process of adding a new book to the system.
         /// </summary>
-        /// <remarks>
-        /// This method clears the console and prompts the user to input details for a new book. It
-        /// validates the inputs and attempts to add the book using the BookService. The user is asked
-        /// if they want to perform another operation in this section, allowing for multiple additions.
-        /// </remarks>
         private void ManageAddBook()
         {
             while (true)
@@ -102,8 +98,8 @@ namespace LibraryManagement.App
                         Year = Helper.GetValidYear()
                     };
 
-                   var addedBook = _bookService.AddBook(book);
-                    Console.WriteLine("\nBook added successfully with the id : " + addedBook.Id);
+                    var addedBook = _bookService.AddBook(book);
+                    Console.WriteLine($"\nBook added successfully with the ID: {addedBook.Id}");
                 }
                 catch (Exception ex)
                 {
@@ -115,14 +111,8 @@ namespace LibraryManagement.App
         }
 
         /// <summary>
-        /// Manages the process of updating an existing book's details in the library.
+        /// Manages the process of updating an existing book in the system.
         /// </summary>
-        /// <remarks>
-        /// This method clears the console and prompts the user to input the ISBN of the book they wish
-        /// to update. If the book is found, the user can update its details. The method then updates
-        /// the book using the BookService. The user is given the option to perform another operation
-        /// within this section.
-        /// </remarks>
         private void ManageUpdateBook()
         {
             while (true)
@@ -131,53 +121,18 @@ namespace LibraryManagement.App
                 Console.WriteLine("Update an Existing Book");
                 Console.WriteLine("=======================\n");
 
-                Console.WriteLine("Would you like to update the book by ID or ISBN?");
-                Console.WriteLine("1. By ID");
-                Console.WriteLine("2. By ISBN");
-                Console.Write("Enter your choice: ");
-                var choice = Console.ReadLine();
-
-                Book book = null;
+                var book = GetBookByUserChoice();
+                if (book == null)
+                {
+                    Console.WriteLine("\nBook not found.");
+                    if (!PromptForAnotherOperation()) break;
+                    continue;
+                }
 
                 try
                 {
-                    if (choice == "1")
-                    {
-                        var id = Helper.GetValidInput("Enter Book ID: ");
-                        if (int.TryParse(id, out var bookId))
-                        {
-                            book = _bookService.GetBookById(bookId);
-                        }
-
-                        if (book != null)
-                        {
-                            Console.WriteLine($"\nCurrent ISBN: {book.ISBN}");
-                            var newIsbn = Helper.GetValidIsbn();
-                            if (!string.IsNullOrWhiteSpace(newIsbn))
-                            {
-                                book.ISBN = newIsbn;
-                            }
-                        }
-                    }
-                    else if (choice == "2")
-                    {
-                        var isbn = Helper.GetValidIsbn();
-                        book = _bookService.GetBookByIsbn(isbn);
-                    }
-
-                    if (book == null)
-                    {
-                        Console.WriteLine("\nBook not found.");
-                        if (!PromptForAnotherOperation()) break;
-                        continue;
-                    }
-
-                    book.Title = Helper.GetValidInput("Enter new Title: ");
-                    book.Author = Helper.GetValidInput("Enter new Author: ");
-                    book.Year = Helper.GetValidYear();
-
+                    UpdateBookDetails(book);
                     _bookService.UpdateBook(book);
-
                     Console.WriteLine("\nBook updated successfully.");
                 }
                 catch (Exception ex)
@@ -190,13 +145,8 @@ namespace LibraryManagement.App
         }
 
         /// <summary>
-        /// Manages the process of deleting a book from the library.
+        /// Manages the process of deleting a book from the system.
         /// </summary>
-        /// <remarks>
-        /// This method clears the console and prompts the user to input the ISBN of the book they wish
-        /// to delete. It attempts to delete the book using the BookService and informs the user of the
-        /// result. The user is prompted to perform another operation in this section.
-        /// </remarks>
         private void ManageDeleteBook()
         {
             while (true)
@@ -205,45 +155,22 @@ namespace LibraryManagement.App
                 Console.WriteLine("Delete a Book");
                 Console.WriteLine("=============\n");
 
-                Console.WriteLine("Would you like to delete the book by ID or ISBN?");
-                Console.WriteLine("1. By ID");
-                Console.WriteLine("2. By ISBN");
-                Console.Write("Enter your choice: ");
-                var choice = Console.ReadLine();
-
-
-                try
+                var book = GetBookByUserChoice();
+                if (book == null)
                 {
-
-                    bool success = false;
-
-                    if (choice == "1")
-                    {
-                        var id = Helper.GetValidInput("Enter Book ID: ");
-                        if (int.TryParse(id, out var bookId))
-                        {
-                            success = _bookService.DeleteBookById(bookId);
-                        }
-                    }
-                    else if (choice == "2")
-                    {
-                        var isbn = Helper.GetValidIsbn();
-                        success = _bookService.DeleteBookByIsbn(isbn);
-                    }
-
-
-                    if (success)
-                    {
-                        Console.WriteLine("\nBook deleted successfully.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("\nBook not found or could not be deleted.");
-                    }
+                    Console.WriteLine("\nBook not found.");
                 }
-                catch (Exception ex)
+                else
                 {
-                    Console.WriteLine($"\nError: {ex.Message}");
+                    try
+                    {
+                        var success = _bookService.DeleteBookById(book.Id) || _bookService.DeleteBookByIsbn(book.ISBN);
+                        Console.WriteLine(success ? "\nBook deleted successfully." : "\nBook could not be deleted.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"\nError: {ex.Message}");
+                    }
                 }
 
                 if (!PromptForAnotherOperation()) break;
@@ -251,13 +178,8 @@ namespace LibraryManagement.App
         }
 
         /// <summary>
-        /// Manages the process of viewing the details of a specific book.
+        /// Manages the process of viewing details of a specific book.
         /// </summary>
-        /// <remarks>
-        /// This method clears the console and prompts the user to input the ISBN of the book they wish
-        /// to view. It retrieves and displays the book's details if found. If the book is not found,
-        /// the user is informed. The method allows the user to perform another operation in this section.
-        /// </remarks>
         private void ManageViewBookDetails()
         {
             while (true)
@@ -266,62 +188,26 @@ namespace LibraryManagement.App
                 Console.WriteLine("View Book Details");
                 Console.WriteLine("=================\n");
 
-                Console.WriteLine("Would you like to view the book details by ID or ISBN?");
-                Console.WriteLine("1. By ID");
-                Console.WriteLine("2. By ISBN");
-                Console.Write("Enter your choice: ");
-                var choice = Console.ReadLine();
-
-                Book book = null;
-
-                try
+                var book = GetBookByUserChoice();
+                if (book != null)
                 {
-
-                    if (choice == "1")
-                    {
-                        var id = Helper.GetValidInput("Enter Book ID: ");
-                        if (int.TryParse(id, out var bookId))
-                        {
-                            book = _bookService.GetBookById(bookId);
-                        }
-                    }
-                    else if (choice == "2")
-                    {
-                        var isbn = Helper.GetValidIsbn();
-                        book = _bookService.GetBookByIsbn(isbn);
-                    }
-
-                    if (book != null)
-                    {
-                        Console.WriteLine($"\nTitle: {book.Title}");
-                        Console.WriteLine($"Author: {book.Author}");
-                        Console.WriteLine($"ISBN: {book.ISBN}");
-                        Console.WriteLine($"Year: {book.Year}");
-                    }
-                    else
-                    {
-                        Console.WriteLine("\nBook not found.");
-                    }
+                    Console.WriteLine($"\nTitle: {book.Title}");
+                    Console.WriteLine($"Author: {book.Author}");
+                    Console.WriteLine($"ISBN: {book.ISBN}");
+                    Console.WriteLine($"Year: {book.Year}");
                 }
-                catch (Exception ex)
+                else
                 {
-                    Console.WriteLine($"\nError: {ex.Message}");
+                    Console.WriteLine("\nBook not found.");
                 }
-
 
                 if (!PromptForAnotherOperation()) break;
             }
         }
 
-
         /// <summary>
-        /// Lists all the books available in the library.
+        /// Lists all books available in the system.
         /// </summary>
-        /// <remarks>
-        /// This method clears the console and retrieves a list of all books using the BookService.
-        /// It displays the details of each book in the console. If no books are available, it informs
-        /// the user. The user is prompted to return to the main menu after viewing the list of books.
-        /// </remarks>
         private void ListAllBooks()
         {
             Console.Clear();
@@ -329,7 +215,6 @@ namespace LibraryManagement.App
             Console.WriteLine("=================\n");
 
             var books = _bookService.GetAllBooks();
-
             if (books == null || !books.Any())
             {
                 Console.WriteLine("No books available.");
@@ -347,19 +232,86 @@ namespace LibraryManagement.App
         }
 
         /// <summary>
-        /// Prompts the user to perform another operation in the current section.
+        /// Prompts the user to choose a book by ID or ISBN and retrieves the book details.
         /// </summary>
-        /// <returns>Returns true if the user wants to perform another operation, false otherwise.</returns>
-        /// <remarks>
-        /// This method prompts the user to indicate whether they want to perform another operation
-        /// in the current section. It helps in keeping the user in the same section until they choose
-        /// to exit or proceed to another task.
-        /// </remarks>
+        /// <returns>The selected book or null if not found.</returns>
+        /// <summary>
+        /// Lists all books available in the system.
+        /// </summary>
+        private Book GetBookByUserChoice()
+        {
+            Console.WriteLine("Would you like to search for the book by ID or ISBN?");
+            Console.WriteLine("1. By ID");
+            Console.WriteLine("2. By ISBN");
+            Console.Write("Enter your choice: ");
+            var choice = Console.ReadLine();
+
+            Book book = null;
+
+            if (choice == "1")
+            {
+                var id = Helper.GetValidInput("Enter Book ID: ");
+                if (int.TryParse(id, out var bookId))
+                {
+                    book = _bookService.GetBookById(bookId);
+                }
+            }
+            else if (choice == "2")
+            {
+                var isbn = Helper.GetValidIsbn();
+                book = _bookService.GetBookByIsbn(isbn);
+            }
+
+            return book;
+        }
+
+        /// <summary>
+        /// Prompts the user to choose a book by ID or ISBN and retrieves the book details.
+        /// </summary>
+        /// <returns>The selected book or null if not found.</returns>
+        private void UpdateBookDetails(Book book)
+        {
+            Console.WriteLine($"\nCurrent ISBN: {book.ISBN}");
+            var newIsbn = Helper.GetValidIsbn();
+            if (!string.IsNullOrWhiteSpace(newIsbn))
+            {
+                book.ISBN = newIsbn;
+            }
+
+            book.Title = Helper.GetValidInput("Enter new Title: ");
+            book.Author = Helper.GetValidInput("Enter new Author: ");
+            book.Year = Helper.GetValidYear();
+        }
+
+        /// <summary>
+        /// Prompts the user to perform another operation within the same section.
+        /// </summary>
+        /// <returns>True if the user wants to perform another operation; otherwise, false.</returns>
         private static bool PromptForAnotherOperation()
         {
             Console.WriteLine("\nDo you want to perform another operation in this section? (Y/N)");
             var choice = Console.ReadLine()?.ToUpper();
             return choice == "Y";
         }
+
+        /// <summary>
+        /// Displays simple instructions for using the Library Management System.
+        /// </summary>
+        private void DisplayInstructions()
+        {
+            Console.Clear();
+            Console.WriteLine("=====================================");
+            Console.WriteLine(" Welcome to the Library Management System ");
+            Console.WriteLine("=====================================\n");
+            Console.WriteLine("Instructions:");
+            Console.WriteLine("1. You can add, update, delete, list, and view books.");
+            Console.WriteLine("2. Follow the prompts for each option to enter the required details.");
+            Console.WriteLine("3. Make sure to enter valid data, especially for ISBN and Year.");
+            Console.WriteLine("4. To exit, select the appropriate option from the main menu.");
+            Console.WriteLine("\nPress any key to continue...");
+            Console.ReadKey();
+        }
+
+        #endregion
     }
 }
