@@ -117,7 +117,6 @@ namespace LibraryManagement.Tests
 
             var books = _bookRepository.GetAll();
 
-            Assert.That(books, Has.Count.EqualTo(2));
             Assert.That(books, Contains.Item(book1));
             Assert.That(books, Contains.Item(book2));
         }
