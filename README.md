@@ -12,6 +12,10 @@ The Library Management System is a .NET console application designed to manage a
 - **List All Books**: Displays a list of all books in the system.
 - **View Book Details**: Provides detailed information about a specific book by ISBN.
 
+## Design
+
+For a detailed explanation of the design and architecture of the Library Management System, please refer to the [Design Document](https://github.com/balaji16464/LibraryManagementSystem/blob/master/Desgin.md).
+
 ## Technologies
 
 - **.NET Core**: The framework used for building the application.
@@ -35,20 +39,20 @@ The Library Management System is a .NET console application designed to manage a
    git clone https://github.com/balaji16464/LibraryManagementSystem.git
    cd LibraryManagementSystem
 
-2.**Open in Visual Studio**
+2. **Open in Visual Studio**
 
   To open Visual Studio  Select File > Open > Project/Solution.
   Navigate to the LibraryManagementSystem directory and open the LibraryManagementSystem.sln file.
 
-**3. Restore Dependencies**
+3. **Restore Dependencies**
 
   In Visual Studio, restore the required NuGet packages by right-clicking on the solution in Solution Explorer and selecting Restore NuGet Packages.
 
-**4. Build the Solution**
+4. **Build the Solution**
 
    Build the solution by selecting Build > Build Solution from the top menu or pressing Ctrl+Shift+B.
 
-**5. Run the Application**
+5. **Run the Application**
 
   Set LibraryManagement.App as the startup project (right-click on LibraryManagement.App in Solution Explorer and select Set as Startup Project).
   Press F5 to run the application in Debug mode.
